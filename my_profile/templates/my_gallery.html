@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}GALLERY - WORK FAST BHIM{% endblock %}
+
+{% block header %}GALLERY{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            {% for image in images|dictsortreversed:"created_at" %}
+                <div class="gallery-item col-md-6">
+                    <div class="card" style="height: 800px; overflow: auto;">
+                        <div class="thumbnail-container">
+                            <a href="{{image.image.url}}" data-lightbox="gallery" data-title="{{image.title}}">
+                                <img src="{{ image.image.url }}" alt="{{ image.title }}" class="img-fluid img-thumbnail card-img-top gallery-image">
+                            </a>
+                            <h3 class="mt-3">{{ image.title }}</h3>
+                            <p style="max-height: 300px; overflow: auto;">{{ image.description }}</p>
+                            <p class="text-muted">{{ image.created_at }}</p>
+                        </div>
+
+                        <h3>Comments</h3>
+                        <div class="card-body comment-container" style="max-height: 300px; overflow: auto;">
+                            {% for comment in image.comment_set.all %}
+                                <div class="card-text">
+                                    <strong>{{ comment.author }}</strong>
+                                    <p class="card-text">{{ comment.text }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn btn-primary toggle-comment">Toggle Comment</button>
+
+                        <form method="post" action="{% url 'my_profile:add_image_comment' image.id %}" class="mt-3">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label" for="id_author">Your Name:</label>
+                                <input class="form-control" type="text" name="author" required id="id_author">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label" for="id_text">Your Comment:</label>
+                                <textarea class="form-control" name="text" required id="id_text"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Comment</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'lightbox2/css/lightbox.css' %}">
+    <style>
+        .comment-container {
+            display: none;
+        }
+
+        .thumbnail-container {
+            height: 800px; /* Set your desired fixed height for the thumbnail container */
+            overflow: hidden;
+        }
+
+        .thumbnail-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+    <style>
+        .gallery-image {
+            transition: transform 0.3s ease-in-out;
+            max-width: 1000px;  /* Set your desired minimum width */
+            max-height: 1000px; /* Set your desired minimum height */
+        }
+
+        .gallery-image:hover {
+            transform: scale(1.5); /* Increase the scale value to enlarge more */
+            transform-origin: top;
+        }
+    </style>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'lightbox2/js/lightbox.js' %}"></script>
+    <script>
+        $(document).ready(function(){
+            $('.toggle-comment').on('click', function(){
+                $(this).siblings('.comment-container').toggle();
+            });
+        });
+    </script>
+    <script>
+        lightbox.option({
+          'resizeDuration': 100,
+          'wrapAround': true
+        })
+    </script>
+{% endblock %}
